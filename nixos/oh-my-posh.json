@@ -1,0 +1,140 @@
+{
+  "$schema": "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/schema.json",
+  "blocks": [
+    {
+      "alignment": "left",
+      "segments": [
+        {
+          "type": "session",
+          "style": "diamond",
+          "foreground": "#EFDCF9",
+          "background": "#0E050F",
+          "template": "  {{ if .SSHSession }}  {{ end }}{{ .UserName }}{{ if .Env.CONTAINER_ID }}@{{ .Env.CONTAINER_ID }} {{ end }}"
+        },
+        {
+          "background": "#170B3B",
+          "foreground": "#EFDCF9",
+          "powerline_symbol": "",
+          "properties": {
+            "folder_icon": "...",
+            "folder_separator_icon": "/",
+            "home_icon": "~",
+            "max_depth": 3,
+            "style": "unique"
+          },
+          "style": "powerline",
+          "template": "{{ .Path }}",
+          "type": "path"
+        },
+        {
+          "background": "#341948",
+          "foreground": "#EFDCF9",
+          "powerline_symbol": "",
+          "properties": {
+            "branch_max_length": 25,
+            "fetch_stash_count": true,
+            "fetch_status": true,
+            "fetch_upstream_icon": true
+          },
+          "style": "diamond",
+          "trailing_diamond": "",
+          "template": " {{ .UpstreamIcon }}{{ .HEAD }}{{if .BranchStatus }}{{ .BranchStatus }}{{ end }}",
+          "type": "git"
+          
+
+        },
+        {
+          "background": "#170B3B",
+          "foreground": "#EFDCF9",
+          "powerline_symbol": "",
+          "properties": {
+            "always_enabled": true
+          },
+          "style": "diamond",
+          "template": " {{ .FormattedMs }}",
+          "type": "executiontime"
+        },
+        {
+          "background": "#170B3B",
+          "foreground": "#009c27",
+          "foreground_templates": [
+            "{{ if gt .Code 0 }}#FF3C3C{{ end }}"
+          ],
+          "properties": {
+            "always_enabled": true
+          },
+          "style": "diamond",
+          "template": "{{ if eq .Code 0}}  {{ end }}{{ if gt .Code 0 }}  {{.Code}}{{ end }}",
+          "trailing_diamond": "",
+          "type": "status"
+        }
+      ],
+      "type": "prompt"
+    },
+    {
+      "alignment": "right",
+      
+      "segments": [
+        {
+          "type": "command",
+          "style": "diamond",
+          "command": "just -l -q | tail +2 | wc -l",
+          "background": "#4c1f5e",
+          "foreground": "#E4F34A"
+        },
+        {
+          "background": "#4c1f5e",
+          "foreground": "#E4F34A",
+          "leading_diamond": " ",
+          "properties": {
+            "fetch_version": true
+          },
+          "style": "diamond",
+          "template": " {{ if .Error }}{{ .Error }}{{ else }}{{ if .Venv }}󰴖 {{ end }}{{ .Full }}{{ end }}",
+          "trailing_diamond": "",
+          "type": "python"
+        },
+        {
+          "background": "#4c1f5e",
+          "foreground": "#42E66C",
+          "leading_diamond": " ",
+          "properties": {
+            "fetch_version": false
+          },
+          "style": "diamond",
+          "template": "{{ if .PackageManagerIcon }}{{ .PackageManagerIcon }} {{ end }}{{ .Full }}",
+          "trailing_diamond": "",
+          "type": "node"
+        },
+        {
+          "background": "#4c1f5e",
+          "foreground": "#EFDCF9",
+          "properties": {
+            "time_format": "15:04:05"
+          },
+          "style": "diamond",
+          "template": " {{ .CurrentDate | date .Format }}",
+          "leading_diamond": " ",
+          "trailing_diamond": "",
+          "type": "time"
+        }          
+      ],
+      "type": "prompt"
+    },
+    {
+      "alignment": "left",
+      "newline": true,
+      "type": "prompt",
+      "segments": [
+        {
+          "type": "text",
+          "style": "plain",
+          "template": ">"
+        }
+      ]
+    }
+  ],
+  "console_title_template": "{{ .Shell }} - {{ .Folder }}",
+  "final_space": true,
+  "version": 2
+}
