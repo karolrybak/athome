@@ -69,8 +69,7 @@ bindkey -M isearch '^?' backward-delete-char
 
 function j() {
   if [ $# -eq 0 ]; then
-    numoptions=`just -l | grep -v "Ava" | wc -l`
-    if [ numoptions -eq 1]; then
+    if [ $(just -l | tail +2 | wc -l) -eq 1 ]; then
       just
     else
       just --choose

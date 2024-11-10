@@ -20,23 +20,11 @@
     '';
   };
 
-  boot.loader = {
-    timeout = 1;
-
-    efi = { efiSysMountPoint = "/boot"; };
-
-    grub = {
-      enable = true;
-      efiSupport = true;
-      efiInstallAsRemovable =
-        true; # Otherwise /boot/EFI/BOOT/BOOTX64.EFI isn't generated
-      devices = [ "nodev" ];
-      splashImage = "/etc/nixos/splash.png";
-    };
-  };
   networking = {
-    hostName = "pc-kr"; # Define your hostname.
-    networkmanager.enable = true;
+    hostName = "lap-kr"; # Define your hostname.
+    wireless = {
+      enable = true;
+    };
     nameservers = [ "1.1.1.1" "1.0.0.1" ];
   };
   # Set your time zone.
@@ -65,22 +53,7 @@
 
   hardware.graphics.enable = true;
   hardware.graphics.enable32Bit = true;
-  services.xserver.videoDrivers = [ "nvidia" ];
-  hardware.nvidia-container-toolkit.enable = true;
-
-  hardware.nvidia = {
-    # Modesetting is required.
-    modesetting.enable = true;
-    powerManagement.enable = false;
-    powerManagement.finegrained = false;
-    open = false;
-
-    nvidiaSettings = true;
-
-    # Optionally, you may need to select the appropriate driver version for your specific GPU.
-    package = config.boot.kernelPackages.nvidiaPackages.latest;
-  };
-
+  
   hardware.bluetooth.enable = true;
 
   # programs.hyprland = {
@@ -96,34 +69,9 @@
   # You can disable this if you're only using the Wayland session.
   services.xserver.enable = true;
 
-  # Enable the KDE Plasma Desktop Environment.
-  # services.displayManager.sddm.enable = true;
-
-  # services.greetd = {
-  #   enable = true;
-  #   settings = {
-  #     initial_session = {
-  #       command = "${session}";
-  #       user = "${username}";
-  #     };
-  #     default_session = {
-  #       command = "${tuigreet} --greeting 'Welcome to NixOS!' --asterisks --remember --remember-user-session --time -cmd ${session}";
-  #       user = "greeter";
-  #     };
-  #   };
-  # };
-
-  services.displayManager.sddm = {
+  services.desktopManager.plasma6 = {
     enable = true;
-    autoNumlock = true;
-    theme = "catpuccin-sddm";
-    settings.AutoLogin = {
-      enable = true;
-      user = "kr";
-    };
   };
-
-  services.desktopManager.plasma6.enable = true;
 
   # Configure keymap in X11
   services.xserver.xkb = {
@@ -167,13 +115,6 @@
     shell = pkgs.zsh;
   };
 
-  # users.users.dkr = {
-  #   isNormalUser = true;
-  #   description = "docker user";
-  #   extraGroups = [ "networkmanager" "dialout" "wheel" "docker" "podman" ];
-  #   shell = pkgs.zsh;
-  # };
-
   # SYNCTHING
 
   services = {
@@ -186,14 +127,6 @@
     };
   };
 
-  # THUNAR
-  # programs.thunar.enable = true;
-  # programs.thunar.plugins = with pkgs.xfce; [
-  #  thunar-archive-plugin
-  #  thunar-volman
-  # ];
-
-  # programs.xfconf.enable = true;
   services.gvfs.enable = true; # Mount, trash, and other functionalities
 
   # Install firefox.
@@ -212,7 +145,6 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    # cli tools
     bat
     ccze
     curl
@@ -243,24 +175,18 @@
     sqlite
     zip
     unzip
+    
 
     # Terminals
-    alacritty
-    cool-retro-term
     kitty
-    terminator
 
-    # Browsers
-    google-chrome
-    microsoft-edge
-    qutebrowser
-    librewolf-unwrapped
-    floorp-unwrapped
-    tor-browser    
+    # Tools
     ungoogled-chromium
+    kdePackages.konqueror
+    kdePackages.falkon
+    kdePackages.ktorrent
 
     # Containers
-    nvidia-container-toolkit
     distrobox
     rootlesskit
     podman-compose
@@ -272,27 +198,14 @@
 
     # 3KHome
     esphome
-    ollama
-    libtensorflow
-    # wyoming-openwakeword
 
     # Tools
-    vscode
+    vscodium
     vlc
     nomacs
-    transmission_4-qt6
-    sqlitestudio
     solaar
-    coppwr
-    lmstudio
     qtcreator
-    ventoy
     input-leap
-
-    # 3D
-    slic3r
-    openscad-lsp
-    openscad-unstable
 
     # Python
     pipx
@@ -307,78 +220,37 @@
     nixfmt-classic
     devenv
 
-    # C++
-    clang-tools
-    cmake
-    gnumake
-    libclang
-
-    cudatoolkit
     direnv
-    egl-wayland
-    glslang
-    libgdiplus
-    logitech-udev-rules
    
-    pwvucontrol
-    virtualgl
-    
-    
-    catppuccin-sddm
-    kdePackages.kdeclarative
-    kdePackages.kirigami
-    kdePackages.libplasma
-    kdePackages.oxygen-icons
-    kdePackages.oxygen-sounds
-    kdePackages.plasma-sdk
-    kdePackages.qt6ct
-    kdePackages.qtbase
-    kdePackages.qtdeclarative
-    kdePackages.qtlanguageserver
-    kdePackages.qtserialbus
-    kdePackages.qtshadertools
-    kdePackages.qttools
-    kdePackages.qtutilities
-    kdePackages.qtwayland
-    kdePackages.qtwebengine
-    kdePackages.qtwebsockets
-    kdePackages.qtwebview   
-    kdePackages.sddm
-    kdePackages.qtquick3d
-    kdePackages.qtquick3dphysics
-    kdePackages.qttools
-    kdePackages.qmlbox2d
     kdePackages.plasma-browser-integration
-    kdePackages.qtmultimedia
     kdePackages.plasmatube
     kdePackages.plasma-vault
+    kdePackages.krdc
 
     box2d
   ];
 
   services.printing.drivers = with pkgs; [ splix samsung-unified-linux-driver ];
-  services.udev = {
-    enable = true;
-    extraRules =
-      "SUBSYSTEM=='tty', MODE='0666', GROUP='dialout',SYMLINK+='device_%s{serial}'";
-  };
+  # services.udev = {
+  #   enable = true;
+  #   extraRules =
+  #     "SUBSYSTEM=='tty', MODE='0666', GROUP='dialout',SYMLINK+='device_%s{serial}'";
+  # };
 
   services.flatpak.enable = true;
   # services.cloudflare-warp.enable = true;
 
-  programs.nix-ld.enable = true;
-  programs.nix-ld.libraries = with pkgs; [
-    libusb1
-    libstdcxx5
+  # programs.nix-ld.enable = true;
+  # programs.nix-ld.libraries = with pkgs; [
+  #   libusb1
+  #   libstdcxx5
     
-    # Add any missing dynamic libraries for unpackaged programs
-    # here, NOT in environment.systemPackages
-  ];
+  #   # Add any missing dynamic libraries for unpackaged programs
+  #   # here, NOT in environment.systemPackages
+  # ];
 
   programs.adb.enable = true;
   programs.kdeconnect.enable = true;
 
-  system.stateVersion = "24.05"; 
-
-  
+  system.stateVersion = "24.05";  
 }
