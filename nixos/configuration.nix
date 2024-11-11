@@ -3,41 +3,29 @@
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
 { config, pkgs, ... }: {
-  imports = [ # Include the results of the hardware scan.
+  imports = [ 
+    # Include the results of the hardware scan.
     ./hardware-configuration.nix
     ./cachix.nix
     <home-manager/nixos>
     ./home-manager/3khome.nix
   ];
 
-  nix = {
-    settings.substituters = [ "https://nix-community.cachix.org" ];
-    settings.trusted-public-keys = [
-      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-    ];
-    extraOptions = ''
-      trusted-users = root kr
-    '';
-  };
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.systemd-boot.editor = false;
+  boot.loader.timeout = 0;
+  boot.kernelParams = ["quiet" "rd.systemd.show_status=false" "rd.udev.log_level=3" "udev.log_priority=3"];
+  boot.consoleLogLevel = 0;
+  boot.initrd.verbose = false;
+  boot.initrd.systemd.enable = true;
+  systemd.watchdog.rebootTime = "0";
 
-  boot.loader = {
-    timeout = 1;
 
-    efi = { efiSysMountPoint = "/boot"; };
-
-    grub = {
-      enable = true;
-      efiSupport = true;
-      efiInstallAsRemovable =
-        true; # Otherwise /boot/EFI/BOOT/BOOTX64.EFI isn't generated
-      devices = [ "nodev" ];
-      splashImage = "/etc/nixos/splash.png";
-    };
-  };
   networking = {
-    hostName = "pc-kr"; # Define your hostname.
-    networkmanager.enable = true;
+    hostName = "lap-kr"; # Define your hostname.
     nameservers = [ "1.1.1.1" "1.0.0.1" ];
+    networkmanager.enable = true;
   };
   # Set your time zone.
   time.timeZone = "Europe/Warsaw";
@@ -56,31 +44,10 @@
     LC_TELEPHONE = "pl_PL.UTF-8";
     LC_TIME = "pl_PL.UTF-8";
   };
-
-  boot.kernelPackages = pkgs.linuxPackages_zen;
-  boot.extraModulePackages = with config.boot.kernelPackages; [ v4l2loopback ];
-  boot.consoleLogLevel = 0;
-  boot.kernelParams = [ "quiet" "udev.log_level=3" ];
-  boot.initrd.verbose = false;
-
+ 
   hardware.graphics.enable = true;
   hardware.graphics.enable32Bit = true;
-  services.xserver.videoDrivers = [ "nvidia" ];
-  hardware.nvidia-container-toolkit.enable = true;
-
-  hardware.nvidia = {
-    # Modesetting is required.
-    modesetting.enable = true;
-    powerManagement.enable = false;
-    powerManagement.finegrained = false;
-    open = false;
-
-    nvidiaSettings = true;
-
-    # Optionally, you may need to select the appropriate driver version for your specific GPU.
-    package = config.boot.kernelPackages.nvidiaPackages.latest;
-  };
-
+  
   hardware.bluetooth.enable = true;
 
   # programs.hyprland = {
@@ -95,33 +62,6 @@
   # Enable the X11 windowing system.
   # You can disable this if you're only using the Wayland session.
   services.xserver.enable = true;
-
-  # Enable the KDE Plasma Desktop Environment.
-  # services.displayManager.sddm.enable = true;
-
-  # services.greetd = {
-  #   enable = true;
-  #   settings = {
-  #     initial_session = {
-  #       command = "${session}";
-  #       user = "${username}";
-  #     };
-  #     default_session = {
-  #       command = "${tuigreet} --greeting 'Welcome to NixOS!' --asterisks --remember --remember-user-session --time -cmd ${session}";
-  #       user = "greeter";
-  #     };
-  #   };
-  # };
-
-  services.displayManager.sddm = {
-    enable = true;
-    autoNumlock = true;
-    theme = "catpuccin-sddm";
-    settings.AutoLogin = {
-      enable = true;
-      user = "kr";
-    };
-  };
 
   services.desktopManager.plasma6.enable = true;
 
@@ -167,13 +107,6 @@
     shell = pkgs.zsh;
   };
 
-  # users.users.dkr = {
-  #   isNormalUser = true;
-  #   description = "docker user";
-  #   extraGroups = [ "networkmanager" "dialout" "wheel" "docker" "podman" ];
-  #   shell = pkgs.zsh;
-  # };
-
   # SYNCTHING
 
   services = {
@@ -186,14 +119,6 @@
     };
   };
 
-  # THUNAR
-  # programs.thunar.enable = true;
-  # programs.thunar.plugins = with pkgs.xfce; [
-  #  thunar-archive-plugin
-  #  thunar-volman
-  # ];
-
-  # programs.xfconf.enable = true;
   services.gvfs.enable = true; # Mount, trash, and other functionalities
 
   # Install firefox.
@@ -212,7 +137,6 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    # cli tools
     bat
     ccze
     curl
@@ -243,24 +167,20 @@
     sqlite
     zip
     unzip
-
+    
     # Terminals
-    alacritty
-    cool-retro-term
+    terminus-nerdfont
+    inconsolata-nerdfont
+    fira-code-nerdfont
+    inter-nerdfont
     kitty
-    terminator
 
     # Browsers
     google-chrome
-    microsoft-edge
-    qutebrowser
-    librewolf-unwrapped
-    floorp-unwrapped
     tor-browser    
-    ungoogled-chromium
+    kdePackages.ktorrent
 
     # Containers
-    nvidia-container-toolkit
     distrobox
     rootlesskit
     podman-compose
@@ -272,27 +192,14 @@
 
     # 3KHome
     esphome
-    ollama
-    libtensorflow
-    # wyoming-openwakeword
 
     # Tools
     vscode
     vlc
     nomacs
-    transmission_4-qt6
-    sqlitestudio
     solaar
-    coppwr
-    lmstudio
     qtcreator
-    ventoy
     input-leap
-
-    # 3D
-    slic3r
-    openscad-lsp
-    openscad-unstable
 
     # Python
     pipx
@@ -307,23 +214,8 @@
     nixfmt-classic
     devenv
 
-    # C++
-    clang-tools
-    cmake
-    gnumake
-    libclang
-
-    cudatoolkit
     direnv
-    egl-wayland
-    glslang
-    libgdiplus
-    logitech-udev-rules
-   
-    pwvucontrol
-    virtualgl
-    
-    
+      
     catppuccin-sddm
     kdePackages.kdeclarative
     kdePackages.kirigami
@@ -349,36 +241,34 @@
     kdePackages.qttools
     kdePackages.qmlbox2d
     kdePackages.plasma-browser-integration
-    kdePackages.qtmultimedia
     kdePackages.plasmatube
     kdePackages.plasma-vault
-
-    box2d
+    kdePackages.krdc
   ];
 
   services.printing.drivers = with pkgs; [ splix samsung-unified-linux-driver ];
-  services.udev = {
-    enable = true;
-    extraRules =
-      "SUBSYSTEM=='tty', MODE='0666', GROUP='dialout',SYMLINK+='device_%s{serial}'";
-  };
+  # services.udev = {
+  #   enable = true;
+  #   extraRules =
+  #     "SUBSYSTEM=='tty', MODE='0666', GROUP='dialout',SYMLINK+='device_%s{serial}'";
+  # };
 
   services.flatpak.enable = true;
   # services.cloudflare-warp.enable = true;
 
-  programs.nix-ld.enable = true;
-  programs.nix-ld.libraries = with pkgs; [
-    libusb1
-    libstdcxx5
+  # programs.nix-ld.enable = true;
+  # programs.nix-ld.libraries = with pkgs; [
+  #   libusb1
+  #   libstdcxx5
     
-    # Add any missing dynamic libraries for unpackaged programs
-    # here, NOT in environment.systemPackages
-  ];
+  #   # Add any missing dynamic libraries for unpackaged programs
+  #   # here, NOT in environment.systemPackages
+  # ];
 
   programs.adb.enable = true;
   programs.kdeconnect.enable = true;
-
-  system.stateVersion = "24.05"; 
+  
+  system.stateVersion = "24.05";  
 
   
 }
