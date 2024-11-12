@@ -8,6 +8,7 @@
     ./cachix.nix
     <home-manager/nixos>
     ./home-manager/3khome.nix
+    ./services.nix
   ];
 
   nix = {
@@ -19,12 +20,16 @@
       trusted-users = root kr
     '';
   };
-
+  
+  boot.loader.systemd-boot.editor = false;
+  boot.kernelParams = ["quiet" "rd.systemd.show_status=false" "rd.udev.log_level=3" "udev.log_priority=3"];
+  boot.consoleLogLevel = 0;
+  boot.initrd.verbose = false;
+  boot.initrd.systemd.enable = true;
+  
   boot.loader = {
     timeout = 1;
-
     efi = { efiSysMountPoint = "/boot"; };
-
     grub = {
       enable = true;
       efiSupport = true;
@@ -34,6 +39,7 @@
       splashImage = "/etc/nixos/splash.png";
     };
   };
+
   networking = {
     hostName = "pc-kr"; # Define your hostname.
     networkmanager.enable = true;
@@ -57,12 +63,7 @@
     LC_TIME = "pl_PL.UTF-8";
   };
 
-  boot.kernelPackages = pkgs.linuxPackages_zen;
-  boot.extraModulePackages = with config.boot.kernelPackages; [ v4l2loopback ];
-  boot.consoleLogLevel = 0;
-  boot.kernelParams = [ "quiet" "udev.log_level=3" ];
-  boot.initrd.verbose = false;
-
+  hardware.logitech.wireless.enable = true;
   hardware.graphics.enable = true;
   hardware.graphics.enable32Bit = true;
   services.xserver.videoDrivers = [ "nvidia" ];
@@ -98,20 +99,6 @@
 
   # Enable the KDE Plasma Desktop Environment.
   # services.displayManager.sddm.enable = true;
-
-  # services.greetd = {
-  #   enable = true;
-  #   settings = {
-  #     initial_session = {
-  #       command = "${session}";
-  #       user = "${username}";
-  #     };
-  #     default_session = {
-  #       command = "${tuigreet} --greeting 'Welcome to NixOS!' --asterisks --remember --remember-user-session --time -cmd ${session}";
-  #       user = "greeter";
-  #     };
-  #   };
-  # };
 
   services.displayManager.sddm = {
     enable = true;
@@ -167,13 +154,6 @@
     shell = pkgs.zsh;
   };
 
-  # users.users.dkr = {
-  #   isNormalUser = true;
-  #   description = "docker user";
-  #   extraGroups = [ "networkmanager" "dialout" "wheel" "docker" "podman" ];
-  #   shell = pkgs.zsh;
-  # };
-
   # SYNCTHING
 
   services = {
@@ -186,14 +166,19 @@
     };
   };
 
-  # THUNAR
-  # programs.thunar.enable = true;
-  # programs.thunar.plugins = with pkgs.xfce; [
-  #  thunar-archive-plugin
-  #  thunar-volman
-  # ];
+  services.openssh = {
+    enable = true;
+    ports = [ 22 ];
+    settings = {
+      PasswordAuthentication = true;
+      AllowUsers = null; # Allows all users by default. Can be [ "user1" "user2" ]
+      UseDns = true;
+      X11Forwarding = false;
+      PermitRootLogin = "prohibit-password"; # "yes", "without-password", "prohibit-password", "forced-commands-only", "no"
+    };
+  };  
 
-  # programs.xfconf.enable = true;
+    # programs.xfconf.enable = true;
   services.gvfs.enable = true; # Mount, trash, and other functionalities
 
   # Install firefox.
@@ -243,6 +228,18 @@
     sqlite
     zip
     unzip
+    gping
+    choose
+    procs
+    broot
+    fd
+    mutt
+
+    # Fonts
+    terminus-nerdfont
+    inconsolata-nerdfont
+    fira-code-nerdfont
+    inter-nerdfont
 
     # Terminals
     alacritty
@@ -357,11 +354,15 @@
   ];
 
   services.printing.drivers = with pkgs; [ splix samsung-unified-linux-driver ];
-  services.udev = {
-    enable = true;
-    extraRules =
-      "SUBSYSTEM=='tty', MODE='0666', GROUP='dialout',SYMLINK+='device_%s{serial}'";
-  };
+#   services.udev = {
+#     enable = true;
+#     extraRules =
+# ''    
+#       SUBSYSTEM=='tty', MODE='0666', GROUP='dialout',SYMLINK+='device_%s{serial}'";
+#       KERNEL=='uinput', GROUP='dialout', MODE='0660'
+# '';
+      
+#   };
 
   services.flatpak.enable = true;
   # services.cloudflare-warp.enable = true;
